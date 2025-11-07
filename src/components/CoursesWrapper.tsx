@@ -95,7 +95,7 @@ export default function CoursesWrapper({ courses, cats, byTeacher: teacher }: Pr
 			{!byTeacher && (
 				<SectionHeader title={pageTitle} subtitle={`${courses.length} دوره آموزشی`} />
 			)}
-			<div className={`flex lg:flex-row lg:max-w-full max-w-3xl flex-col lg:gap-4 ${byTeacher ? "gap-10" : "gap-20"}`}>
+			<div className={`flex lg:flex-row w-full lg:max-w-full max-w-3xl flex-col lg:gap-4 ${byTeacher ? "gap-10" : "gap-20"}`}>
 				{byTeacher ? (
 					<div className="flex flex-col items-center text-center gap-4 flex-1 lg:sticky top-20 bottom-0 right-0 min-h-[350px] max-h-max py-6 px-4 rounded-lg bg-card">
 						<img src={teacher?.image!} width={100} className="rounded-full" alt={teacher?.name} />
