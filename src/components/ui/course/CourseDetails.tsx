@@ -2,15 +2,52 @@
 
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { ArrowUpLeft, ChevronLeft, GraduationCap, Handbag, Play, Star, Users2 } from "lucide-react";
+import { cart, categories, courses, courseSeasons as courseSeasonsTb, students as studentsTb, users } from "@/db/schema";
+import { addCourseToCart } from "@/lib/actions";
+import { User } from "better-auth";
+import { ChevronLeft, GraduationCap, Handbag, Play, Star, Users2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../accordion";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "../breadcrumb";
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "../item";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "../item";
+import { Spinner } from "../spinner";
 
-export default function CourseDetails() {
+type Props = {
+	course: typeof courses.$inferSelect;
+	teacher: typeof users.$inferSelect;
+	students: typeof studentsTb.$inferSelect[];
+	courseSeasons: typeof courseSeasonsTb.$inferSelect[];
+	cats: typeof categories.$inferSelect[];
+	user: User & { cart: typeof cart.$inferSelect[] } | null
+}
+
+export default function CourseDetails({ course, teacher, students, courseSeasons, cats, user }: Props) {
 	const [showMore, setShowMore] = useState(false);
+	const [pending, startTransition] = useTransition();
+	const router = useRouter();
+
+	const onAddToCart = async () => {
+		if (!user?.email) {
+			toast.error("برای استفاده از سبد باید وارد حساب خود بشید");
+			return;
+		};
+		if (user.cart.some(item => item.courseId === course.id)) {
+			toast.error("این دوره از قبل در سبد خرید شما هست");
+			return;
+		}
+		startTransition(async () => {
+			const { err } = await addCourseToCart({ courseId: course.id, userId: user.id })
+			if (!err) {
+				router.refresh();
+				toast.success(`دوره ${course.title} به سبد خرید شما اضافه شد`);
+			} else {
+				toast.error(err);
+			}
+		})
+	}
 
 	return (
 		<div className="flex flex-col gap-14 py-20 w-full max-w-5xl">
@@ -29,117 +66,99 @@ export default function CourseDetails() {
 						<ChevronLeft />
 					</BreadcrumbSeparator>
 					<BreadcrumbItem>
-						<Link href="/category/front-end">فرانت اند</Link>
+						<Link href={`/courses?category=${course.categoryId}`} className="capitalize">{cats.find(cat => cat.id === course.categoryId)!.name.split("_").join(" ")}</Link>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator>
 						<ChevronLeft />
 					</BreadcrumbSeparator>
 					<BreadcrumbItem>
-						<BreadcrumbPage>آموزش Next.js به صورت پروژه محور</BreadcrumbPage>
+						<BreadcrumbPage>{course.title}</BreadcrumbPage>
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
 			<div className="flex lg:items-center gap-6 lg:flex-row flex-col-reverse">
 				<div className="flex flex-col gap-6">
 					<SectionHeader
-						title="آموزش Next.js به صورت پروژه محور"
-						subtitle="نکست یه فریمورک مبتنی بر ری‌اکت هست که امروزه تو بازار کار یکی از مهم‌ترین تکنولوژی‌ها برای توسعه دهنده های ری‌اکت به حساب میاد. نکست رو میشه مکمل ری‌اکت دونست. یعنی هر چی که ری‌اکت داره"
+						title={course.title}
+						subtitle={course.description}
 						direction="col"
 					/>
-					<div className="flex items-center gap-6">
-						<Button size="lg" className="text-base">
-							<Handbag className="size-5" />
-							افزودن به سبد خرید
-						</Button>
-						<div>
-							<h3 className="text-xl"><span className="text-2xl">230,000</span> تومان</h3>
-						</div>
+					<div className="flex items-center flex-wrap gap-6">
+						{students.some(st => (st.courseId === course.id) && (st.studentId === user?.id)) ? (
+							<h3 className="text-xl text-primary">
+								دانشجوی این دوره هستید
+							</h3>
+						) :
+							<>
+								{user?.cart.some(item => item.courseId === course.id) ? (
+									<Button variant="secondary" size="lg" className="text-base" disabled={pending} onClick={onAddToCart}>
+										{pending && <Spinner />}
+										این دوره در سبد خرید شماست
+									</Button>
+								) : (
+									<Button size="lg" className="text-base" disabled={pending} onClick={onAddToCart}>
+										{pending ? <Spinner /> : <Handbag className="size-5" />}
+										افزودن به سبد خرید
+									</Button>
+								)}
+							</>
+						}
+						{!students.some(st => (st.courseId === course.id) && (st.studentId === user?.id)) && (
+							<div>
+								<h3 className="text-xl"><span className="text-2xl">{course.price.toLocaleString()}</span> تومان</h3>
+							</div>
+						)}
 					</div>
 				</div>
-				<div className="lg:max-w-md border-2 border-accent rounded-2xl overflow-hidden">
-					<video poster="https://sabzlearn.ir/wp-content/uploads/2025/07/29-1.webp" src="https://tech.sabzlearn.ir/uploads/ce01010101it/next/Next001-intro.mp4?h=Gy_p9nV0Cj8qLfQu1xFxTw&t=1761985445" controls></video>
+				<div className="lg:max-w-md max-w-2xl border-2 border-accent rounded-2xl overflow-hidden">
+					<video poster={course.cover} className="w-full" controls></video>
 				</div>
 			</div>
 			<div className="flex lg:flex-row flex-col items-start gap-4">
-				<div className="flex flex-col gap-6 flex-1 lg:max-w-[650px]">
+				<div className="flex flex-col gap-6 flex-2 lg:max-w-[650px]">
 					<div className="grid md:grid-cols-3 grid-cols-2 gap-3">
 						<Item variant="muted">
 							<ItemContent>
 								<ItemTitle>وضعیت دوره</ItemTitle>
-								<ItemDescription>تکمیل شده</ItemDescription>
+								<ItemDescription>{course.status}</ItemDescription>
 							</ItemContent>
 						</Item>
 						<Item variant="muted">
 							<ItemContent>
 								<ItemTitle>مدت زمان دوره</ItemTitle>
-								<ItemDescription>۶۲ ساعت</ItemDescription>
+								<ItemDescription>{course.duration}</ItemDescription>
 							</ItemContent>
 						</Item>
 						<Item variant="muted">
 							<ItemContent>
 								<ItemTitle>آخرین بروزرسانی</ItemTitle>
-								<ItemDescription>۱۴۰۳/۰۷/۱۹</ItemDescription>
+								<ItemDescription>{Intl.DateTimeFormat("fa-ir", {
+									dateStyle: "medium",
+								}).format(course.updatedAt)}</ItemDescription>
 							</ItemContent>
 						</Item>
 						<Item variant="muted">
 							<ItemContent>
 								<ItemTitle>روش پشتیبانی</ItemTitle>
-								<ItemDescription>آنلاین</ItemDescription>
+								<ItemDescription>{course.supportMode}</ItemDescription>
 							</ItemContent>
 						</Item>
 						<Item variant="muted">
 							<ItemContent>
 								<ItemTitle>پیش نیاز</ItemTitle>
-								<ItemDescription>React JS</ItemDescription>
+								<ItemDescription>{course.requirement}</ItemDescription>
 							</ItemContent>
 						</Item>
 						<Item variant="muted">
 							<ItemContent>
 								<ItemTitle>نوع مشاهده</ItemTitle>
-								<ItemDescription>به صورت آنلاین</ItemDescription>
+								<ItemDescription>{course.tutorialMode}</ItemDescription>
 							</ItemContent>
 						</Item>
 					</div>
-					<div className="flex flex-col gap-6 px-6 py-10 rounded-xl bg-card relative">
+					<div className="flex flex-col gap-6 px-6 py-10 rounded-xl bg-card relative max-w-full overflow-hidden">
 						<h3 className="text-3xl">توضیحات</h3>
-						<p className={`whitespace-pre-wrap text-wrap text-muted-foreground grid gap-6 leading-9 ${showMore ? "max-h-max" : "max-h-[300px]"} overflow-hidden`}>
-							NEXT.Js یا NEXT طی چندسال اخیر برای تکمیل و تقویت تکنولوژی React وارد میدون شد و سعی کرد تمام نواقص یا محدودیت های اون رو پوشش بده تا هیچ شک و شبهه ای در قدرت ری اکت برای طراحی صفحات وب باقی نمونه. به عبارتی اومده تا با ویژگی فول استک بودن، React رو فراتر از یک تکنولوژی فرانت اند جا بندازه و از طریق ترکیب اون با Node Js در بک اند، به شما کمک کنه یک پروژه کامل و صفر تا صد وب رو به بهترین شکل طراحی و پیاده سازی کنید.
-							<img src="https://sabzlearn.ir/wp-content/uploads/2024/01/next-1536x864.webp" alt="image" className="rounded-2xl" />
-							اگر در برنامه نویسی دنبال کاهش کدهای برنامه، سرعت اجرای فوق العاده وب سایت، فول استک بودن تکنولوژی و همینطور پشتیبانی اون هستید، NEXT یکی از بهترین گزینه های موجود روی میز شما خواهد بود چون علاوه بر داشتن تمام مزایای ری اکت، اکثر ایراداتی که توسعه دهنده های تکنولوژی های رقیب به اون وارد میکردن رو پوشش داده و حتی فراتر از اونها عمل کرده.
-
-							در ادامه به طور خلاصه ویژگی های اصلی که باعث افزایش قدرت و محبوبیت NEXT در بین توسعه دهنده ها شده رو باهم بررسی خواهیم کرد. با ما همراه باشید…
-
-							رندرینگ سمت سرور (SSR)
-							در واقع NEXT امکان بارگذاری صفحات React  در سمت سرور رو به شما میده که این کار باعث میشه بتونید صفحات رو ابتدا با اطلاعات و داده های سرور پر کرده و بعد از داینامیک شدن، اون رو به عنوان یک صفحه HTML  آماده به کاربران نمایش بدید.
-
-							پشتیبانی از CSR (Client-Side Rendering)
-							NEXT  علاوه بر اینکه قابلیت رندرینگ سمت سرور رو در اختیار شما میذاره، در عین حال امکان رندرینگ و بارگذاری محتوا سمت کلاینت رو هم برای شما فراهم میکنه. پس با استفاده از این قابلیت میتونید بدون بارگذاری یا رفرش مجدد صفحات، به صورت لحظه ای تغییرات کاربری رو اعمال کرده و نمایش بدید.
-
-							Routing ساده و اتوماتیک
-							در NEXT یک سیستم Routing  ساده و قابل فهم وجود داره که صفحات جدید رو با استفاده از فایل های جدیدی که میسازید و پوشه بندی که خودش انجام میده، به صورت اتوماتیک مسیریابی میکنه که یکی از ویژگی های مهم این تکنولوژی محسوب میشه. در حالی که این کار در React باید به صورت دستی انجام میشد.
-
-							پشتیبانی از Static Site Generation (SSG)
-							این قابلیت فوق العاده به شما کمک میکنه تا برای کاهش بار سرور و حجم درخواست های ارسالی به سمت اون، بخشی از قسمت ها و صفحات رو به صورت استاتیک طراحی کنید تا برای هربار لود شدن نیازی به ارسال درخواست وجود نداشته باشه.
-
-							این مزایا در کنار دهها ویژگی دیگه باعث بهبود تجربه کاربری و سرعت سایت میشه که نتیجه اون تسهیل و تقویت فرآیند سئو خواهد بود. اساسا یکی از مهمترین دلایل معرفی NEXT پوشش نقاط ضعف React در مباحث سئو بود که دیگه میشه گفت کاملا برطرف شده و از لحاظ گوگل پسند بودن جزو بهترینهاست.
-
-							حالا که با ویژگی های فنی NEXT آشنا شدید، در ادامه به تمام سوالات و دغدغه هایی که ممکنه قبل از شروع دوره در ذهن شما باشه جواب دادیم تا با خیال راحت و دید باز مسیر آموزشتون رو شروع کنید.
-
-							تو این دوره قراره چی یاد بگیریم؟
-							به طور خلاصه در این دوره شما هر آنچه برای مسلط شدن به NEXTJS نیاز داشته باشید به شما آموزش داده میشه. یعنی ابتدا یه سری نکات کلی در مورد سئو در فرانت اند به شما آموزش داده میشه که توصیه میکنیم حتما این قسمت‌های اول رو که رایگان هم هستن ببینید تا علاوه بر اصلاح و تکمیل تسلط شما به این موضوع، آمادگی خوبی برای مطالب بعدی پیدا کنید.
-
-							در مرحله بعد کانسپت های اصلی و اساسی NEXTJS  رو به صورت کامل و عمیق آموزش می بینید به صورتی که بتونید در پروژه های واقعی و کاربردی ازشون استفاده کنید. در واقع در این مرحله هست که به صورت عمیق با NEXTJS  و قدرت اون آشنا خواهید شد.
-
-							بعد از اینکه تونستید با کانسپت های اصلی NEXTJS  آشنا بشید، وارد مرحله جذاب پروژه های عملی میشید و اونجا با چهار تا مینی پروژه مطالب رو مرور خواهید کرد. بعد از اون یک پروژه خیلی خوب توسعه میدید تا مطمئن بشیم به تسلط کامل رسیدید.
-
-							این دوره برای چه کسانی مناسب هست؟
-							دوره جامع NEXT برای دو دسته از دانشجوها خیلی مفید و کاربردی هست.
-
-							دسته اول کسانی که در حال حاضر در سطح متوسط و پیشرفته با React کار میکنن
-
-							دسته دوم کسانی که قبلا دوره NEXT در جاهای دیگه رو گذروندن اما به هر دلیل خوب مسلط نشدن یا نتونستن از مطالب اون دوره استفاده کنن
-
-							اگر جزو یکی از این دوتا دسته هستید، این دوره جامع برای شما تولید شده و اونقدر به دانش و تجربیات شما اضافه می‌کنه که هر ایده و طرحی تو ذهنتون بیاد رو به راحتی بتونید پیاده سازی کنید یا حتی بخش هایی از پروژه های دیگران رو که از نظر شما جذاب و خلاقانه هستن، در پروژه خودتون بسازید.</p>
+						<p className={`whitespace-pre-wrap w-full text-wrap text-muted-foreground grid gap-6 leading-9 ${showMore ? "max-h-max" : "max-h-[300px]"} overflow-hidden`} dangerouslySetInnerHTML={{ __html: course.content }} />
 						<div className={`${showMore ? "static pt-12" : "absolute bg-linear-to-b from-card/30 dark:via-card to-background h-[200px] bottom-0 left-0 right-0 pb-12"} flex items-end justify-center `}>
 							<Button variant="outline" size="lg" className="text-base" onClick={() => setShowMore(!showMore)}>مشاهده {showMore ? "کمتر" : "بیشتر"}</Button>
 						</div>
@@ -149,79 +168,54 @@ export default function CourseDetails() {
 							<GraduationCap size={35} />
 							سر فصل ها
 						</h3>
-						<Accordion type="single" className="space-y-3" collapsible>
-							<AccordionItem value="1" className="bg-secondary rounded-lg">
-								<AccordionTrigger className="flex items-center justify-between gap-4 !no-underline px-4">
-									<h3 className="text-lg">معرفی دوره</h3>
-									<p className="text-muted-foreground mr-auto" dir="ltr">
-										2 lessons - 30 min
-									</p>
-								</AccordionTrigger>
-								<AccordionContent className="w-full flex flex-col">
-									<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
-										<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
-										<div className="text-base text-muted-foreground inline-flex items-center gap-2">
-											<Play />
-											<span>۰۸:۲۶</span>
-										</div>
-									</Button>
-									<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
-										<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
-										<div className="text-base text-muted-foreground inline-flex items-center gap-2">
-											<Play />
-											<span>۰۸:۲۶</span>
-										</div>
-									</Button>
-									<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
-										<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
-										<div className="text-base text-muted-foreground inline-flex items-center gap-2">
-											<Play />
-											<span>۰۸:۲۶</span>
-										</div>
-									</Button>
-								</AccordionContent>
-							</AccordionItem>
-							<AccordionItem value="2" className="bg-secondary rounded-lg">
-								<AccordionTrigger className="flex items-center justify-between gap-4 !no-underline px-4">
-									<h3 className="text-lg">سئو و فرانت اند</h3>
-									<p className="text-muted-foreground mr-auto" dir="ltr">
-										4 lessons - 140 min
-									</p>
-								</AccordionTrigger>
-								<AccordionContent className="w-full flex flex-col">
-									<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
-										<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
-										<div className="text-base text-muted-foreground inline-flex items-center gap-2">
-											<Play />
-											<span>۰۸:۲۶</span>
-										</div>
-									</Button>
-									<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
-										<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
-										<div className="text-base text-muted-foreground inline-flex items-center gap-2">
-											<Play />
-											<span>۰۸:۲۶</span>
-										</div>
-									</Button>
-									<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
-										<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
-										<div className="text-base text-muted-foreground inline-flex items-center gap-2">
-											<Play />
-											<span>۰۸:۲۶</span>
-										</div>
-									</Button>
-								</AccordionContent>
-							</AccordionItem>
-						</Accordion>
+						{courseSeasons.length > 0 ? (
+							<Accordion type="single" className="space-y-3" collapsible>
+								{courseSeasons.map(season => (
+									<AccordionItem key={season.id} value={season.id.toString()} className="bg-secondary rounded-lg">
+										<AccordionTrigger className="flex items-center justify-between gap-4 !no-underline px-4">
+											<h3 className="text-lg">{season.title}</h3>
+											<p className="text-muted-foreground mr-auto" dir="ltr">
+												2 lessons - 30 min
+											</p>
+										</AccordionTrigger>
+										<AccordionContent className="w-full flex flex-col">
+											<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
+												<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
+												<div className="text-base text-muted-foreground inline-flex items-center gap-2">
+													<Play />
+													<span>۰۸:۲۶</span>
+												</div>
+											</Button>
+											<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
+												<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
+												<div className="text-base text-muted-foreground inline-flex items-center gap-2">
+													<Play />
+													<span>۰۸:۲۶</span>
+												</div>
+											</Button>
+											<Button variant="secondary" className="hover:bg-card flex items-center justify-between py-8 px-6 rounded-none">
+												<h4 className="text-base">معرفی دوره +‌ پاسخ به سوالات متداول</h4>
+												<div className="text-base text-muted-foreground inline-flex items-center gap-2">
+													<Play />
+													<span>۰۸:۲۶</span>
+												</div>
+											</Button>
+										</AccordionContent>
+									</AccordionItem>
+								))}
+							</Accordion>
+						) : (
+							<p className="text-muted-foreground">هنوز ویدیویی در این دوره ظبط نشده</p>
+						)}
 					</div>
 				</div>
-				<div className="flex flex-col flex-1 gap-4 w-full max-w-2xl">
+				<div className="flex flex-col flex-1 gap-4 w-full max-w-xl">
 					<div className="px-4 py-6 rounded-xl flex flex-col gap-4 bg-card">
 						<div className="grid grid-cols-2 gap-3">
 							<Item variant="muted" className="bg-accent">
 								<ItemActions><Users2 size={30} /></ItemActions>
 								<ItemContent>
-									<ItemTitle className="text-xl">2042</ItemTitle>
+									<ItemTitle className="text-xl">{students.length}</ItemTitle>
 									<ItemDescription>دانشجو</ItemDescription>
 								</ItemContent>
 							</Item>
@@ -236,15 +230,19 @@ export default function CourseDetails() {
 						<div className="flex flex-col justify-between gap-3 pt-3">
 							<div className="flex items-center justify-between">
 								<h3>درصد تکمیل دوره</h3>
-								<h3>100%</h3>
+								<h3>{course.completePercent}%</h3>
 							</div>
 							<div className="h-2 w-full rounded-full bg-primary"></div>
 						</div>
 					</div>
-					<div className="flex flex-col items-center gap-6 py-4 px-6 bg-card rounded-xl">
-						<img src="https://secure.gravatar.com/avatar/50db59beddbfed36a1646dae99ca7b2d?s=96&d=mm&r=g" className="rounded-full object-cover" width={100} alt="teacher" />
-						<h3 className="text-xl">محمد امین سعیدی راد</h3>
-						<Button size="lg">مشاهده پروفایل</Button>
+					<div className="flex flex-col items-center gap-3 py-4 px-6 bg-card rounded-xl">
+						<img src={teacher.image!} className="rounded-full object-cover" width={100} alt="teacher" />
+						<div className="flex flex-col gap-4 items-center">
+							<h3 className="text-xl">{teacher.name}</h3>
+							<Link href={`/teachers/${teacher.id}`}>
+								<Button size="lg" variant="outline">مشاهده پروفایل</Button>
+							</Link>
+						</div>
 					</div>
 				</div>
 			</div>

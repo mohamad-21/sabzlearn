@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import LocalFont from "next/font/local";
+import NextTopLoader from 'nextjs-toploader';
+import { Toaster as HotToaster } from 'react-hot-toast';
 import "./globals.css";
-import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 const vazirFont = LocalFont({
   src: [
@@ -41,6 +43,10 @@ export default function RootLayout({
           enableColorScheme
         >
           {children}
+          <HotToaster toastOptions={{
+            className: "!bg-card !text-muted-foreground"
+          }} position="bottom-left" />
+          <NextTopLoader showSpinner={false} color="var(--primary)" />
         </NextThemesProvider>
       </body>
     </html>

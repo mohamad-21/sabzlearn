@@ -1,0 +1,83 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1762104281847,
+      "tag": "0000_busy_warhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1762114330115,
+      "tag": "0001_flawless_pixie",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1762416916338,
+      "tag": "0002_moaning_timeslip",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1762438678940,
+      "tag": "0003_sudden_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1762518199247,
+      "tag": "0004_green_firestar",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1762520330353,
+      "tag": "0005_absurd_jack_flag",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1762520377365,
+      "tag": "0006_colorful_fixer",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1762520604169,
+      "tag": "0007_flawless_mephistopheles",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1762520625038,
+      "tag": "0008_ambitious_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1762520702476,
+      "tag": "0009_unique_captain_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1762520737222,
+      "tag": "0010_violet_iron_monger",
+      "breakpoints": true
+    }
+  ]
+}

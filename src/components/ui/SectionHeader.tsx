@@ -14,8 +14,8 @@ type Props = {
 
 export default function SectionHeader({ title, subtitle, link, direction = "row" }: Props) {
 	return (
-		<div className={`flex ${direction === "row" ? "flex-row items-center justify-between" : "flex-col"} gap-4 pb-10`}>
-			<h2 className="lg:text-3xl text-2xl">{title}</h2>
+		<div className={`flex ${direction === "row" ? "flex-row items-center justify-between" : "flex-col"} gap-4 pb-10 w-full`}>
+			<h2 className="lg:text-3xl text-2xl capitalize">{title}</h2>
 			{(link && !subtitle) && (
 				<Link href={link.href} className="inline-flex gap-1 text-muted-foreground">{link.title} <ArrowUpLeft /></Link>
 

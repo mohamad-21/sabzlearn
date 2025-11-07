@@ -14,11 +14,14 @@ import {
 	FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Spotlight } from "./ui/spotlight-new"
-import Link, { useLinkStatus } from "next/link"
+import { authClient } from "@/lib/auth"
 import { ChevronLeft } from "lucide-react"
+import Link, { useLinkStatus } from "next/link"
 import { useRouter } from "next/navigation"
+import { useTransition } from "react"
+import toast from "react-hot-toast"
 import { Spinner } from "./ui/spinner"
+import { Spotlight } from "./ui/spotlight-new"
 
 const formSchema = z.object({
 	email: z.email("یک ایمیل معتبر وارد کنید."),
@@ -26,24 +29,39 @@ const formSchema = z.object({
 })
 
 export default function LoginWrapper() {
-
 	const router = useRouter();
-	const { pending } = useLinkStatus();
+	const { pending: linkPending } = useLinkStatus();
+	const [pending, startTransition] = useTransition();
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			email: "",
+			email: "mohamad21@gmail.com",
+			password: "123456"
 		},
 	})
 	// 2. Define a submit handler.
-	function onSubmit(values: z.infer<typeof formSchema>) {
-		// Do something with the form values.
-		// ✅ This will be type-safe and validated.
-		console.log(values)
+	async function onSubmit(values: z.infer<typeof formSchema>) {
+		startTransition(async () => {
+			const { data, error } = await authClient.signIn.email({
+				email: values.email,
+				password: values.password,
+				rememberMe: true,
+				callbackURL: "http://localhost:3000"
+			});
+
+			if (error) {
+				if (error.code === "INVALID_EMAIL_OR_PASSWORD") {
+					toast.error("ایمیل یا رمز عبور نامعتبر است");
+				} else {
+					toast.error("خطای ناشناخته ای رخ داد. بعدا امتحان کنید");
+				}
+				return;
+			}
+			toast.success("به حساب خود وارد شدید.");
+		})
 	}
-	// ...
 
 	return (
 		<div className="flex flex-col gap-7 min-h-screen items-center justify-center relative overflow-hidden py-10 px-6">
@@ -56,6 +74,7 @@ export default function LoginWrapper() {
 					<FormField
 						control={form.control}
 						name="email"
+						disabled={pending}
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>ایمیل</FormLabel>
@@ -69,6 +88,7 @@ export default function LoginWrapper() {
 					<FormField
 						control={form.control}
 						name="password"
+						disabled={pending}
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>رمز عبور</FormLabel>
@@ -79,9 +99,12 @@ export default function LoginWrapper() {
 							</FormItem>
 						)}
 					/>
-					<Button className="w-full text-lg" size="lg" type="submit">ورود</Button>
+					<Button className="w-full text-lg" size="lg" type="submit" disabled={pending}>
+						{pending && <Spinner />}
+						ورود
+					</Button>
 					<div>
-						<p className="text-sm">حساب کاربری ندارید؟‌ <Link className="text-primary" href="/signup">{pending && <Spinner className="inline" />} ثبت نام</Link></p>
+						<p className="text-sm">حساب کاربری ندارید؟‌ <Link className="text-primary" href="/signup">{linkPending && <Spinner className="inline" />} ثبت نام</Link></p>
 					</div>
 				</form>
 			</Form>
