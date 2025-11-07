@@ -21,7 +21,7 @@ export default async function Hero() {
 			</div>
 			<SearchForCourses />
 			<div className="flex items-center gap-4 justify-around w-full max-w-lg z-[1]">
-				<StatsCard image="/clock-min.webp" text="ساعت آموزش" number={1733} />
+				<StatsCard image="/clock-min.webp" text="ساعت آموزش" number={800} />
 				<StatsCard image="/book-min.webp" text="دوره" number={totalCourses} />
 				<StatsCard image="/conversation-min.webp" text="دانشجو" number={totalStudents} />
 			</div>

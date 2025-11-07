@@ -19,7 +19,7 @@ const vazirFont = LocalFont({
 });
 
 export const metadata: Metadata = {
-  title: "آکادمی آموزشی برنامه نویسی سبزلرن",
+  title: "سبزلرن",
   description: "آموزش برنامه‌نویسی، کاربردی و پروژه محور | با دوره‌های متنوع و پشتیبانی قوی | سبزلرن در کنار شما از صفر تا استخدام.",
 };
 
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="rtl" suppressHydrationWarning>
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/logo.svg" />
       </head>

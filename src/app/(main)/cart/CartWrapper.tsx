@@ -52,7 +52,7 @@ export default function CartWrapper({ cartCourses, user }: Props) {
 
 	return (
 		<div className="flex lg:flex-row flex-col lg:items-start items-center gap-7 py-20 w-full max-w-5xl">
-			<div className="flex flex-col gap-3 rounded-lg overflow-hidden flex-2 bg-card">
+			<div className="w-full flex flex-col gap-3 rounded-lg overflow-hidden flex-2 bg-card">
 				<div className="flex items-center py-3 px-4 bg-primary">
 					<h2 className="text-lg flex items-center gap-3">
 						<Handbag />
@@ -61,10 +61,10 @@ export default function CartWrapper({ cartCourses, user }: Props) {
 				</div>
 				<div className="px-6 py-6">
 					{cartCourses?.length ? (
-						<ul className="w-full flex flex-col gap-4">
+						<ul className="w-full flex flex-col sm:gap-6 gap-10">
 							{cartCourses?.map(course => (
-								<li className="flex items-center justify-between gap-5 w-full" key={course.id}>
-									<div className="flex items-center gap-5">
+								<li className="flex sm:flex-row flex-col justify-between gap-5 w-full" key={course.id}>
+									<div className="flex sm:flex-row flex-col sm:items-center gap-5">
 										<img src={course.cover} className="w-[180px] rounded-lg" alt={course.title} />
 										<h3 className="text-sm max-w-[180px]">{course.title}</h3>
 									</div>
@@ -78,7 +78,7 @@ export default function CartWrapper({ cartCourses, user }: Props) {
 							))}
 						</ul>
 					) : (
-						<div className="flex items-center justify-between gap-3">
+						<div className="flex sm:flex-row flex-col sm:items-center justify-between gap-3">
 							<h2 className="text-lg">هنوز دوره ای در سبد اضافه نکردید</h2>
 							<Link href="/courses">
 								<Button variant="outline">مشاهده دوره ها <ArrowUpLeft className="size-5" /></Button>
