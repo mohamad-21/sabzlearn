@@ -8,7 +8,7 @@ export default function Footer() {
 			<div className="flex flex-col gap-20">
 				<div className="grid gap-5 border-b pb-12">
 					<img src="/sublogo.svg" alt="sabzlearn" width={200} />
-					<div className="flex gap-10 text-sm">
+					<div className="flex sm:flex-row flex-col gap-10 text-sm">
 						<p className="text-muted-foreground flex items-center gap-2"><Mail /> info@sabzlearn.ir</p>
 						<p className="text-muted-foreground flex items-center gap-2"><SendIcon /> @sabzlearn_support</p>
 					</div>
