@@ -48,7 +48,7 @@ export default function LoginWrapper() {
 				email: values.email,
 				password: values.password,
 				rememberMe: true,
-				callbackURL: "http://localhost:3000"
+				callbackURL: process.env.NEXT_PUBLIC_BASE_URL
 			});
 
 			if (error) {
