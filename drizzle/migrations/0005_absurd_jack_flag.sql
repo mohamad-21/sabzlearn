@@ -1,0 +1,1 @@
+ALTER TABLE `accounts` MODIFY COLUMN `refresh_token_expires_at` timestamp(3) DEFAULT '2028-05-07 12:58:50.318';

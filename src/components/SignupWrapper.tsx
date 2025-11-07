@@ -19,9 +19,12 @@ import Link, { useLinkStatus } from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Spinner } from "./ui/spinner"
+import { authClient } from "@/lib/auth"
+import { toast } from "react-hot-toast"
+import { useTransition } from "react"
 
 const formSchema = z.object({
-	username: z.string("لطفا نام کاربری خود را وارد کنید").min(4, "حداقل ۴ کاراکتر برای نام کاربری وارد کنید"),
+	name: z.string("لطفا نام کاربری خود را وارد کنید").min(4, "حداقل ۴ کاراکتر برای نام کاربری وارد کنید"),
 	email: z.email("یک ایمیل معتبر وارد کنید."),
 	password: z.string("لطفا رمز عبور خود را وارد کنید"),
 	confirmPassword: z.string("لطفا تکرار رمز عبور را وارد کنید")
@@ -39,17 +42,36 @@ const formSchema = z.object({
 export default function SignupWrapper() {
 
 	const router = useRouter();
-	const { pending } = useLinkStatus();
+	const { pending: linkPending } = useLinkStatus();
+	const [pending, startTransition] = useTransition();
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 	})
 	// 2. Define a submit handler.
-	function onSubmit(values: z.infer<typeof formSchema>) {
-		// Do something with the form values.
-		// ✅ This will be type-safe and validated.
-		console.log(values)
+	async function onSubmit(values: z.infer<typeof formSchema>) {
+		const { name, email, password } = values;
+		startTransition(async () => {
+			const { data, error } = await authClient.signUp.email({
+				name,
+				email,
+				password,
+				image: "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg",
+				callbackURL: "http://localhost:3000"
+			});
+
+			if (error) {
+				if (error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+					toast.error("ایمیل در حاضر وجود دارد. از ایمیل دیگر استفاده کنید");
+				} else if (error.code === "PASSWORD_TOO_SHORT") {
+					toast.error("رمز عبور کوتاه است. حداقل ۶ کاراکتر وارد کنید");
+				} else {
+					toast.error("خطای ناشناخته ای رخ داد. بعدا امتحان کنید");
+				}
+			}
+		})
+
 	}
 	// ...
 
@@ -63,7 +85,8 @@ export default function SignupWrapper() {
 					<h2 className="text-2xl font-bold text-center mb-10">ثبت نام</h2>
 					<FormField
 						control={form.control}
-						name="username"
+						name="name"
+						disabled={pending}
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>نام کاربری</FormLabel>
@@ -77,6 +100,7 @@ export default function SignupWrapper() {
 					<FormField
 						control={form.control}
 						name="email"
+						disabled={pending}
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>ایمیل</FormLabel>
@@ -90,6 +114,7 @@ export default function SignupWrapper() {
 					<FormField
 						control={form.control}
 						name="password"
+						disabled={pending}
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>رمز عبور</FormLabel>
@@ -103,6 +128,7 @@ export default function SignupWrapper() {
 					<FormField
 						control={form.control}
 						name="confirmPassword"
+						disabled={pending}
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>تکرار رمز عبور</FormLabel>
@@ -114,9 +140,12 @@ export default function SignupWrapper() {
 						)}
 
 					/>
-					<Button className="w-full text-lg" size="lg" type="submit">ثبت نام</Button>
+					<Button disabled={pending} className="w-full text-lg" size="lg" type="submit">
+						{pending && <Spinner />}
+						ثبت نام
+					</Button>
 					<div>
-						<p className="text-sm">قبلا ثبت نام کرده اید؟ <Link className="text-primary" href="/login">{pending && <Spinner className="inline" />} وارد شوید</Link></p>
+						<p className="text-sm">قبلا ثبت نام کرده اید؟ <Link className="text-primary" href="/login">{linkPending && <Spinner className="inline" />} وارد شوید</Link></p>
 					</div>
 				</form>
 			</Form>

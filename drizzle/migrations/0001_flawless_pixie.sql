@@ -1,0 +1,2 @@
+ALTER TABLE `accounts` MODIFY COLUMN `refresh_token_expires_at` timestamp(3) DEFAULT '2028-05-02 20:12:10.046';--> statement-breakpoint
+ALTER TABLE `courses` MODIFY COLUMN `teacher_id` varchar(255) NOT NULL;
