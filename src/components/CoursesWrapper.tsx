@@ -24,7 +24,12 @@ type Props = {
 
 export default function CoursesWrapper({ courses, cats, byTeacher: teacher }: Props) {
 	const searchParams = useSearchParams();
-	const [searchTerm, setSearchTerm] = useState("");
+	const [searchTerm, setSearchTerm] = useState(() => {
+		if (searchParams.has("s")) {
+			return searchParams.get("s")!;
+		}
+		return "";
+	});
 	const [pageTitle, setPageTitle] = useState("دوره های آموزشی");
 	const pathname = usePathname();
 	const router = useRouter();
@@ -73,22 +78,17 @@ export default function CoursesWrapper({ courses, cats, byTeacher: teacher }: Pr
 	}
 
 	useEffect(() => {
-		if (searchTerm) {
-			setPageTitle(`جستجو: \"${searchTerm}\"`);
-		}
-	}, [searchTerm]);
-
-
-	useEffect(() => {
+		const s = searchParams.get("s");
 		const selectedCat = searchParams.get("category");
 
-		if (selectedCat) {
+		if (selectedCat && !searchParams.has("s")) {
 			setPageTitle("دوره ها بر اساس دسته بندی ها")
+		} else if ((searchTerm || s)) {
+			setPageTitle(`جستجو: \"${searchTerm || s}\"`);
+		} else {
+			setPageTitle("دوره های آموزشی");
 		}
-		else {
-			setPageTitle("دوره های آموزشی")
-		}
-	}, [searchParams.get("category")]);
+	}, [searchParams.get("category"), searchParams.get("s"), searchTerm]);
 
 	return (
 		<>
