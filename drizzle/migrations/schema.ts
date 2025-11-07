@@ -1,16 +1,16 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, varchar, text, int, float, unique, mysqlEnum } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, varchar, text, int, float, unique, mysqlEnum, timestamp, tinyint } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const accounts = mysqlTable("accounts", {
 	id: varchar({ length: 36 }).notNull(),
 	accountId: text("account_id").notNull(),
 	providerId: text("provider_id").notNull(),
-	userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id, { onDelete: "cascade" } ),
+	userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	accessToken: text("access_token").default('NULL'),
 	refreshToken: text("refresh_token").default('NULL'),
 	idToken: text("id_token").default('NULL'),
 	accessTokenExpiresAt: timestamp("access_token_expires_at", { fsp: 3, mode: 'string' }).default('current_timestamp(3)').notNull(),
-	refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { fsp: 3, mode: 'string' }).default('''2028-05-02 17:24:32.455''').notNull(),
+	refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { fsp: 3, mode: 'string' }).default('2028-05-02 17:24:32.455').notNull(),
 	scope: text().default('NULL'),
 	password: text().default('NULL'),
 	createdAt: timestamp("created_at", { fsp: 3, mode: 'string' }).default('current_timestamp(3)').notNull(),
@@ -48,7 +48,7 @@ export const courses = mysqlTable("courses", {
 	completePercent: int("complete_percent").notNull(),
 	content: text().notNull(),
 	tags: varchar({ length: 255 }).notNull(),
-	categoryId: int("category_id").notNull().references(() => categories.id, { onDelete: "cascade", onUpdate: "cascade" } ),
+	categoryId: int("category_id").notNull().references(() => categories.id, { onDelete: "cascade", onUpdate: "cascade" }),
 	teacherId: varchar("teacher_id", { length: 255 }).notNull(),
 	createdAt: timestamp("created_at", { fsp: 3, mode: 'string' }).default('current_timestamp(3)').notNull(),
 	updatedAt: timestamp("updated_at", { fsp: 3, mode: 'string' }).default('current_timestamp(3)').notNull(),
@@ -82,9 +82,9 @@ export const sessions = mysqlTable("sessions", {
 	userAgent: text("user_agent").default('NULL'),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 },
-(table) => [
-	unique("sessions_token_unique").on(table.token),
-]);
+	(table) => [
+		unique("sessions_token_unique").on(table.token),
+	]);
 
 export const students = mysqlTable("students", {
 	id: int().autoincrement().notNull(),
@@ -111,14 +111,14 @@ export const users = mysqlTable("users", {
 	name: text().notNull(),
 	email: varchar({ length: 255 }).notNull(),
 	emailVerified: tinyint("email_verified").default(0).notNull(),
-	role: mysqlEnum(['user','teacher']).default('\'user\''),
+	role: mysqlEnum(['user', 'teacher']).default('user'),
 	image: text().default('NULL'),
 	createdAt: timestamp("created_at", { fsp: 3, mode: 'string' }).default('current_timestamp(3)').notNull(),
 	updatedAt: timestamp("updated_at", { fsp: 3, mode: 'string' }).default('current_timestamp(3)').notNull(),
 },
-(table) => [
-	unique("users_email_unique").on(table.email),
-]);
+	(table) => [
+		unique("users_email_unique").on(table.email),
+	]);
 
 export const verifications = mysqlTable("verifications", {
 	id: varchar({ length: 36 }).notNull(),
