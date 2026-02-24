@@ -30,9 +30,6 @@ export default function Footer() {
 								<li><Link href="#" className="text-muted-foreground text-sm">آموزش PHP</Link></li>
 							</ul>
 						</div>
-						<div>
-							<img src="https://sabzlearn.ir/wp-content/themes/sabzlearn-theme/images/enamad.png" alt="enamad" className="sm:max-w-full max-w-[140px]" />
-						</div>
 					</div>
 				</div>
 				<div className="flex items-center justify-between gap-6 sm:flex-row flex-col">

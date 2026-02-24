@@ -111,7 +111,7 @@ export default function CourseDetails({ course, teacher, students, courseSeasons
 					</div>
 				</div>
 				<div className="lg:max-w-md max-w-2xl border-2 border-accent rounded-2xl overflow-hidden">
-					<video poster={course.cover} className="w-full" controls></video>
+					<img src={course.cover} className="w-full" alt={course.title} />
 				</div>
 			</div>
 			<div className="flex lg:flex-row flex-col items-start gap-4">

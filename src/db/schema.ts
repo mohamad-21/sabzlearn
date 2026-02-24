@@ -30,7 +30,7 @@ export const courses = mysqlTable("courses", {
 	title: varchar({ length: 50 }).notNull(),
 	description: varchar({ length: 255 }).notNull(),
 	cover: varchar({ length: 255 }).notNull(),
-	previewVideo: varchar("preview_video", { length: 255 }).notNull(),
+	// previewVideo: varchar("preview_video", { length: 255 }).notNull(),
 	price: float().notNull(),
 	discountPercent: float("discount_percent").notNull(),
 	status: varchar({ length: 255 }).default('\'در حال برگذاری\'').notNull(),

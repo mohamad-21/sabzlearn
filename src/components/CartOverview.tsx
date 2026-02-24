@@ -20,6 +20,7 @@ export default function CartOverview() {
 	const updateCartData = async () => {
 		startTransition(async () => {
 			const resp = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/cart`);
+			if (!resp.ok) return;
 			const { ok, data }: ApiResponse<typeof courses.$inferSelect[]> = await resp.json();
 			setCart(data);
 		})
